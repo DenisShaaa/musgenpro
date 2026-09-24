@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Musgenpro — non-commercial R&D project exploring structured music analysis and controllable generative music workflows inside professional DAWs." />
+  <title>Musgenpro — AI Music Recomposition for DAWs</title>
+  <style>
+    :root{
+      --bg:#0a0c0f;
+      --bg2:#10141a;
+      --panel:#12171e;
+      --panel2:#0f1318;
+      --text:#f2f5f7;
+      --muted:#9aa6b2;
+      --line:#232b35;
+      --accent:#9ef01a;
+      --accent2:#5ee7df;
+      --max:1180px;
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 85% 5%, rgba(94,231,223,.09), transparent 28%),
+        radial-gradient(circle at 5% 25%, rgba(158,240,26,.07), transparent 25%),
+        var(--bg);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height:1.55;
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max);margin:auto;padding:0 28px}
+    nav{
+      position:sticky;top:0;z-index:20;
+      backdrop-filter: blur(16px);
+      background:rgba(10,12,15,.78);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav-inner{
+      min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:20px
+    }
+    .brand{font-weight:800;letter-spacing:-.03em;font-size:21px}
+    .brand span{color:var(--accent)}
+    .nav-links{display:flex;gap:22px;color:var(--muted);font-size:14px}
+    .nav-links a:hover{color:var(--text)}
+    .hero{
+      padding:120px 0 76px;
+      border-bottom:1px solid var(--line)
+    }
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:9px;
+      padding:7px 12px;border:1px solid var(--line);border-radius:999px;
+      color:#c7d0d8;background:rgba(255,255,255,.02);font-size:13px
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px rgba(158,240,26,.65)}
+    h1{
+      margin:26px 0 22px;max-width:900px;
+      font-size:clamp(52px,8vw,104px);line-height:.93;letter-spacing:-.065em;
+    }
+    .grad{
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .lead{
+      max-width:780px;font-size:clamp(19px,2.2vw,27px);line-height:1.35;color:#c4ccd4
+    }
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:48px;padding:0 18px;border-radius:12px;font-weight:700;font-size:14px;
+      border:1px solid var(--line);background:var(--panel)
+    }
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#0a0c0f}
+    .micro{margin-top:24px;color:#71808e;font-size:13px}
+    section{padding:88px 0;border-bottom:1px solid var(--line)}
+    .section-head{display:grid;grid-template-columns:1fr 2fr;gap:42px;margin-bottom:42px}
+    .kicker{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h2{margin:5px 0 0;font-size:clamp(34px,5vw,58px);line-height:1;letter-spacing:-.045em}
+    .section-head p{margin:0;color:#aab5bf;font-size:19px;max-width:700px}
+    .pipeline{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:12px
+    }
+    .step{
+      min-height:170px;padding:20px;border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.012));
+      position:relative
+    }
+    .step::after{
+      content:"→";position:absolute;right:-18px;top:50%;transform:translateY(-50%);
+      color:#485563;font-size:24px;z-index:2
+    }
+    .step:last-child::after{display:none}
+    .n{color:var(--muted);font-size:12px}
+    .step h3{margin:36px 0 8px;font-size:18px}
+    .step p{margin:0;color:var(--muted);font-size:14px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{
+      border:1px solid var(--line);border-radius:var(--radius);
+      padding:26px;background:var(--panel2)
+    }
+    .card h3{margin:0 0 14px;font-size:20px}
+    .card ul{padding-left:18px;margin:0;color:#aab5bf}
+    .card li{margin:7px 0}
+    .blueprint{
+      display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch
+    }
+    pre{
+      margin:0;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:var(--radius);
+      background:#080a0d;color:#d7e2ea;font:14px/1.7 "SFMono-Regular",Consolas,monospace
+    }
+    .bp-copy{padding:26px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel2)}
+    .bp-copy h3{font-size:28px;line-height:1.1;margin:0 0 16px}
+    .bp-copy p{color:#aab5bf}
+    .sliders{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    .sliderbox,.examplebox{border:1px solid var(--line);border-radius:var(--radius);padding:26px;background:var(--panel2)}
+    .slider{margin:17px 0}
+    .slider .row{display:flex;justify-content:space-between;color:#c8d2da;font-size:14px;margin-bottom:7px}
+    .track{height:7px;border-radius:99px;background:#222a33;overflow:hidden}
+    .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .examplebox blockquote{margin:18px 0 0;padding-left:18px;border-left:2px solid var(--accent);font-size:21px;color:#dfe6eb}
+    .stack{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .tech{
+      border:1px solid var(--line);border-radius:16px;padding:18px;background:rgba(255,255,255,.018)
+    }
+    .tech strong{display:block;margin-bottom:5px}
+    .tech span{color:var(--muted);font-size:13px}
+    .status{
+      display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;
+      padding:28px;border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(90deg,rgba(158,240,26,.04),rgba(94,231,223,.035))
+    }
+    .status h3{margin:0 0 7px;font-size:24px}
+    .status p{margin:0;color:var(--muted)}
+    .pill{
+      white-space:nowrap;border:1px solid rgba(158,240,26,.35);color:var(--accent);
+      border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em
+    }
+    footer{padding:48px 0 70px;color:#74818d}
+    .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    @media (max-width:900px){
+      .section-head,.blueprint,.sliders{grid-template-columns:1fr}
+      .pipeline{grid-template-columns:1fr 1fr}
+      .step::after{display:none}
+      .grid3{grid-template-columns:1fr}
+      .stack{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:600px){
+      .wrap{padding:0 18px}
+      .hero{padding-top:88px}
+      .nav-links{display:none}
+      .pipeline,.stack{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top">Musgen<span>pro</span></a>
+      <div class="nav-links">
+        <a href="#concept">Concept</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#control">Control</a>
+        <a href="#stack">Technology</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Non-commercial research project · 2026</div>
+        <h1>Generative music,<br><span class="grad">inside the DAW.</span></h1>
+        <p class="lead">
+          Musgenpro explores a structured, controllable workflow for analyzing an existing musical fragment,
+          transforming selected musical properties, and returning a new generative interpretation directly to the production timeline.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#concept">Project overview</a>
+          <a class="btn" href="#control">See the workflow</a>
+        </div>
+        <div class="micro">Initial implementation: REAPER · Architecture designed for future DAW adapters</div>
+      </div>
+    </header>
+
+    <section id="concept">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">01 · Concept</div>
+            <h2>From audio clip to musical blueprint.</h2>
+          </div>
+          <p>
+            Instead of treating generative music as a separate website, Musgenpro investigates a DAW-native workflow:
+            select a clip, analyze it deeply, decide what should remain and what may change, then generate a new interpretation.
+          </p>
+        </div>
+
+        <div class="pipeline">
+          <div class="step"><span class="n">01</span><h3>DAW audio clip</h3><p>A selected musical fragment from the production timeline.</p></div>
+          <div class="step"><span class="n">02</span><h3>Deep analysis</h3><p>Multimodal AI, transcription models and deterministic DSP.</p></div>
+          <div class="step"><span class="n">03</span><h3>Musical Blueprint</h3><p>Structured machine-readable description of musical and production properties.</p></div>
+          <div class="step"><span class="n">04</span><h3>Transformation</h3><p>Independent preservation controls for harmony, rhythm, timbre and more.</p></div>
+          <div class="step"><span class="n">05</span><h3>Back to the DAW</h3><p>Generated audio is returned to the original timeline position.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">02 · Analysis</div>
+            <h2>More than a text prompt.</h2>
+          </div>
+          <p>
+            The source fragment is analyzed as music, audio and production. Measurable values are handled locally;
+            semantic and perceptual properties are handled by multimodal models.
+          </p>
+        </div>
+
+        <div class="grid3">
+          <div class="card">
+            <h3>Musical structure</h3>
+            <ul>
+              <li>Tempo, meter, beats and bars</li>
+              <li>Key and harmonic movement</li>
+              <li>Chord progression and timing</li>
+              <li>Melodic information</li>
+              <li>Sections, phrases and transitions</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Sound & production</h3>
+            <ul>
+              <li>Instrumentation and musical roles</li>
+              <li>Register and tessitura</li>
+              <li>Timbre and sound design</li>
+              <li>Rhythm, groove and density</li>
+              <li>Mix, stereo image, spatial processing and effects</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Vocals</h3>
+            <ul>
+              <li>Lyrics and language</li>
+              <li>Vocal melody and register</li>
+              <li>Delivery, articulation and timbre</li>
+              <li>Backing vocals and doubles</li>
+              <li>Pitch, formant and spatial processing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">03 · Blueprint</div>
+            <h2>A structured representation.</h2>
+          </div>
+          <p>
+            The analysis is fused into a machine-readable Musical Blueprint.
+            This allows downstream generation to be driven by explicit musical properties rather than an unstructured description alone.
+          </p>
+        </div>
+
+        <div class="blueprint">
+<pre>{
+  "tempo": 128.0,
+  "meter": "4/4",
+  "key": "F# minor",
+  "harmony": {
+    "chords": "...",
+    "timing": "..."
+  },
+  "structure": "...",
+  "melody": "...",
+  "instrumentation": "...",
+  "timbre": "...",
+  "production": "...",
+  "vocals": "...",
+  "energy_curve": "..."
+}</pre>
+          <div class="bp-copy">
+            <h3>Separate what the music <em>is</em> from how it should be transformed.</h3>
+            <p>
+              The source analysis remains immutable. A second target blueprint is created from the user's preservation controls,
+              allowing the original musical description and the desired transformation to remain clearly separated.
+            </p>
+            <p>
+              This makes the workflow suitable for experimentation with both cloud and local generation backends.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="control">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">04 · Control</div>
+            <h2>Preserve some dimensions. Reinvent others.</h2>
+          </div>
+          <p>
+            Instead of a single similarity knob, Musgenpro explores independent control over the musical and production characteristics of the source.
+          </p>
+        </div>
+
+        <div class="sliders">
+          <div class="sliderbox">
+            <div class="slider"><div class="row"><span>Structure</span><span>95%</span></div><div class="track"><div class="fill" style="width:95%"></div></div></div>
+            <div class="slider"><div class="row"><span>Harmony</span><span>85%</span></div><div class="track"><div class="fill" style="width:85%"></div></div></div>
+            <div class="slider"><div class="row"><span>Melody</span><span>70%</span></div><div class="track"><div class="fill" style="width:70%"></div></div></div>
+            <div class="slider"><div class="row"><span>Rhythm / Groove</span><span>90%</span></div><div class="track"><div class="fill" style="width:90%"></div></div></div>
+            <div class="slider"><div class="row"><span>Instrumentation</span><span>25%</span></div><div class="track"><div class="fill" style="width:25%"></div></div></div>
+            <div class="slider"><div class="row"><span>Timbre</span><span>20%</span></div><div class="track"><div class="fill" style="width:20%"></div></div></div>
+            <div class="slider"><div class="row"><span>Production / Mix</span><span>40%</span></div><div class="track"><div class="fill" style="width:40%"></div></div></div>
+            <div class="slider"><div class="row"><span>Mood / Energy</span><span>75%</span></div><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          </div>
+          <div class="examplebox">
+            <div class="kicker">Example transformation</div>
+            <blockquote>
+              Preserve the original harmonic progression, groove and structural timing,
+              while freely replacing instrumentation, timbre and production style.
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">05 · Research stack</div>
+            <h2>Hybrid by design.</h2>
+          </div>
+          <p>
+            Different tasks are assigned to different systems according to their strengths:
+            deterministic measurement, music transcription, multimodal semantic understanding and generative synthesis.
+          </p>
+        </div>
+
+        <div class="stack">
+          <div class="tech"><strong>Qwen3.8-Omni</strong><span>Multimodal semantic audio analysis</span></div>
+          <div class="tech"><strong>SheetSage2</strong><span>Music transcription and structural analysis</span></div>
+          <div class="tech"><strong>Local DSP</strong><span>Technical measurement and verification</span></div>
+          <div class="tech"><strong>Suno</strong><span>Cloud generation backend — API integration under evaluation</span></div>
+          <div class="tech"><strong>YuE2</strong><span>Experimental local generation backend</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">06 · DAW integration</div>
+            <h2>REAPER first. DAW-agnostic core.</h2>
+          </div>
+          <p>
+            The first implementation targets REAPER. The analysis and generation backend is intentionally separated from the DAW-specific control layer,
+            making future adapters for other professional audio workstations possible.
+          </p>
+        </div>
+
+        <div class="status">
+          <div>
+            <h3>Project status</h3>
+            <p>Active non-commercial research and prototype development. No public release is currently announced.</p>
+          </div>
+          <div class="pill">In development · 2026</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div><strong style="color:#dbe3e9">Musgenpro</strong><br>Generative audio workflow research.</div>
+      <div>Contact: <span style="color:#aab5bf">shabd8693@gmail.com</span></div>
+    </div>
+  </footer>
+</body>
+</html>
